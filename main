@@ -1,0 +1,39 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+from pmdarima import auto_arima
+import pandas as pd
+from statsmodels.tsa.stattools import adfuller
+
+# Loading the data, the csv from the same folder
+df = pd.read_csv('traffic.csv')
+
+# Parsing dates
+df['DateTime'] = pd.to_datetime(df['DateTime'])
+# No Index
+df = df.set_index('DateTime')
+
+# Split data into train and test for the analysis
+train_size = int(len(df) * 0.8)
+train, test = df[0:train_size], df[train_size:len(df)]
+
+# ADF test 
+result = adfuller(train['Traffic'])
+
+# Basic Summary statistics
+print('Summary Statistics for the Training Data:')
+print(train.describe())
+
+print('\nAugmented Dickey-Fuller Test:')
+print('ADF Statistic: %f' % result[0])
+print('p-value: %f' % result[1])
+print('Critical Values:')
+for key, value in result[4].items():
+    print('\t%s: %.3f' % (key, value))
+# Test Outcomes
+if result[0] < result[4]["5%"]:
+    print("\nSince the test statistic is less than the 5% critical value, the null hypothesis is rejected.")
+    print("Therefore, the time series is stationary.")
+else:
+    print("\nSince the test statistic is more than the 5% critical value, the null hypothesis is not rejected.")
+    print("Therefore, the time series is not stationary.")
